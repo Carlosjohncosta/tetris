@@ -1,8 +1,9 @@
 mod tetris;
 use nannou::color;
 use nannou::prelude::*;
+use nannou::wgpu::Texture;
 use std::env;
-use std::rc::Rc;
+use std::path::PathBuf;
 use tetris::*;
 
 const BLOCK_SIZE: u32 = 25;
@@ -11,33 +12,38 @@ const GAME_HEIGHT: u32 = 22;
 
 struct Model {
     pause: bool,
-    game_state: GameState<Rc<Rgb<u8>>>,
+    game_state: GameState<&'static Texture>,
 }
 
-fn model(_app: &App) -> Model {
-    let textures = Textures {
-        yellow: Rc::new(color::YELLOW),
-        light_blue: Rc::new(color::CYAN),
-        blue: Rc::new(color::BLUE),
-        orange: Rc::new(color::ORANGERED),
-        green: Rc::new(color::LIME),
-        red: Rc::new(color::RED),
-        purple: Rc::new(color::PURPLE),
-    };
+fn get_textures(app: &App, assets: &PathBuf, name: &str) -> Texture {
+    wgpu::Texture::from_path(app, assets.join(name)).unwrap()
+}
+
+fn model(app: &App) -> Model {
+    let assets = app.assets_path().unwrap();
+    let textures = Box::new(Textures {
+        yellow: get_textures(app, &assets, "Yellow.png"),
+        light_blue: get_textures(app, &assets, "LightBlue.png"),
+        blue: get_textures(app, &assets, "Blue.png"),
+        orange: get_textures(app, &assets, "Orange.png"),
+        green: get_textures(app, &assets, "Green.png"),
+        red: get_textures(app, &assets, "Red.png"),
+        purple: get_textures(app, &assets, "Purple.png"),
+    });
     Model {
         pause: false,
-        game_state: GameState::new(GAME_WIDTH, GAME_HEIGHT, textures),
+        game_state: GameState::new(GAME_WIDTH, GAME_HEIGHT, Box::leak(textures)),
     }
 }
 
-fn draw_block(win: Rect, draw: &Draw, point: &Point, color: &Rgb<u8>) {
+fn draw_block(win: Rect, draw: &Draw, point: &Point, texture: &Texture) {
     let block_size_f = BLOCK_SIZE as f32;
     let Point { x, y } = point;
     let square = Rect::from_w_h(block_size_f, block_size_f)
         .bottom_left_of(win)
         .shift_x(*x as f32 * block_size_f)
         .shift_y(*y as f32 * block_size_f);
-    draw.rect().xy(square.xy()).wh(square.wh()).color(*color);
+    draw.texture(texture).xy(square.xy()).wh(square.wh());
 }
 
 fn view(app: &App, model: &Model, frame: Frame) {
@@ -53,8 +59,8 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let board = model.game_state.get_board();
     for (y, row) in board.iter().enumerate() {
         for (x, cell) in row.get_row().iter().enumerate() {
-            if let Some(color) = cell {
-                draw_block(win, &draw, &Point::new(x as f32, y as f32), color)
+            if let Some(texture) = cell {
+                draw_block(win, &draw, &Point::new(x as f32, y as f32), texture)
             }
         }
     }
@@ -104,7 +110,6 @@ fn event(_app: &App, model: &mut Model, event: Event) {
 }
 
 fn main() {
-    println!("{:?}", env::current_dir().unwrap());
     nannou::app(model)
         .size(GAME_WIDTH * BLOCK_SIZE, GAME_HEIGHT * BLOCK_SIZE)
         .simple_window(view)
