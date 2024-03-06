@@ -1,8 +1,9 @@
 use super::Point;
 use crate::{point_vec, Textures};
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
-pub struct Piece<Texture: Clone> {
+pub struct Piece<Texture> {
     pub name: String,
     pub center: Point,       //Rotation center of piece.
     pub offsets: Vec<Point>, //Offset of each block from rotation center. Add offset to center for block position.
@@ -15,9 +16,9 @@ pub enum Direction {
     AntiClockwise,
 }
 
-impl<Texture: Clone> Piece<Texture> {
+impl<Texture> Piece<Rc<Texture>> {
     //Returns the standard tetris pieces.
-    pub fn get_standard_pieces(textures: Textures<Texture>) -> Vec<Piece<Texture>> {
+    pub fn get_standard_pieces(textures: Textures<Texture>) -> Vec<Piece<Rc<Texture>>> {
         vec![
             Piece {
                 name: "Square".to_owned(),

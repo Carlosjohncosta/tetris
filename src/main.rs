@@ -11,7 +11,7 @@ const GAME_HEIGHT: u32 = 22;
 
 struct Model {
     pause: bool,
-    game_state: GameState<Rc<Rgb<u8>>>,
+    game_state: GameState<Rgb<u8>>,
 }
 
 fn model(_app: &App) -> Model {
