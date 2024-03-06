@@ -1,13 +1,12 @@
 use super::Point;
-use crate::point_vec;
-use nannou::color;
+use crate::{point_vec, Textures};
 
 #[derive(Debug, Clone)]
-pub struct Piece {
+pub struct Piece<Texture: Clone> {
     pub name: String,
     pub center: Point,       //Rotation center of piece.
     pub offsets: Vec<Point>, //Offset of each block from rotation center. Add offset to center for block position.
-    pub color: color::Rgb<u8>,
+    pub texture: Texture,
 }
 
 #[allow(unused)]
@@ -16,51 +15,51 @@ pub enum Direction {
     AntiClockwise,
 }
 
-impl Piece {
+impl<Texture: Clone> Piece<Texture> {
     //Returns the standard tetris pieces.
-    pub fn get_standard_pieces() -> Vec<Piece> {
+    pub fn get_standard_pieces(textures: Textures<Texture>) -> Vec<Piece<Texture>> {
         vec![
             Piece {
                 name: "Square".to_owned(),
                 center: Point::new(4.5, 20.5),
                 offsets: point_vec![(-0.5, 0.5), (0.5, 0.5), (-0.5, -0.5), (0.5, -0.5)],
-                color: color::YELLOW,
+                texture: textures.yellow,
             },
             Piece {
                 name: "Straight".to_owned(),
                 center: Point::new(4.5, 20.5),
                 offsets: point_vec![(-1.5, -0.5), (-0.5, -0.5), (0.5, -0.5), (1.5, -0.5)],
-                color: color::CYAN,
+                texture: textures.light_blue,
             },
             Piece {
                 name: "L".to_owned(),
                 center: Point::new(4.0, 20.0),
                 offsets: point_vec![(-1.0, 0.0), (0.0, 0.0), (1.0, 0.0), (1.0, 1.0)],
-                color: color::BLUE,
+                texture: textures.blue,
             },
             Piece {
                 name: "Backwarsds L".to_owned(),
                 center: Point::new(4.0, 20.0),
                 offsets: point_vec![(-1.0, 0.0), (0.0, 0.0), (1.0, 0.0), (-1.0, 1.0)],
-                color: color::ORANGERED,
+                texture: textures.orange,
             },
             Piece {
                 name: "S".to_owned(),
                 center: Point::new(4.0, 20.0),
                 offsets: point_vec![(-1.0, 0.0), (0.0, 0.0), (0.0, 1.0), (1.0, 1.0)],
-                color: color::LIME,
+                texture: textures.green,
             },
             Piece {
                 name: "Z".to_owned(),
                 center: Point::new(4.0, 20.0),
                 offsets: point_vec![(1.0, 0.0), (0.0, 0.0), (0.0, 1.0), (-1.0, 1.0)],
-                color: color::RED,
+                texture: textures.red,
             },
             Piece {
                 name: "T".to_owned(),
                 center: Point::new(4.0, 20.0),
                 offsets: point_vec![(0.0, 0.0), (-1.0, 0.0), (1.0, 0.0), (0.0, 1.0)],
-                color: color::PURPLE,
+                texture: textures.purple,
             },
         ]
     }

@@ -1,8 +1,8 @@
 mod tetris;
-use std::env;
-
 use nannou::color;
 use nannou::prelude::*;
+use std::env;
+use std::rc::Rc;
 use tetris::*;
 
 const BLOCK_SIZE: u32 = 25;
@@ -11,13 +11,22 @@ const GAME_HEIGHT: u32 = 22;
 
 struct Model {
     pause: bool,
-    game_state: GameState,
+    game_state: GameState<Rc<Rgb<u8>>>,
 }
 
 fn model(_app: &App) -> Model {
+    let textures = Textures {
+        yellow: Rc::new(color::YELLOW),
+        light_blue: Rc::new(color::CYAN),
+        blue: Rc::new(color::BLUE),
+        orange: Rc::new(color::ORANGERED),
+        green: Rc::new(color::LIME),
+        red: Rc::new(color::RED),
+        purple: Rc::new(color::PURPLE),
+    };
     Model {
         pause: false,
-        game_state: GameState::new(GAME_WIDTH, GAME_HEIGHT),
+        game_state: GameState::new(GAME_WIDTH, GAME_HEIGHT, textures),
     }
 }
 
@@ -38,7 +47,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
     let piece = model.game_state.get_current_piece();
 
     for point in piece.get_block_positions().iter() {
-        draw_block(win, &draw, point, &piece.color);
+        draw_block(win, &draw, point, &piece.texture);
     }
 
     let board = model.game_state.get_board();

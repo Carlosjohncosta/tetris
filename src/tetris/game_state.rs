@@ -1,8 +1,7 @@
-use std::collections::VecDeque;
-
 use super::*;
-use nannou::{color, rand, rand::seq::SliceRandom};
-type Board = Box<[BoardRow]>;
+use nannou::{rand, rand::seq::SliceRandom};
+use std::collections::VecDeque;
+type Board<Texture> = Box<[BoardRow<Texture>]>;
 
 pub enum Axis {
     X,
@@ -10,12 +9,12 @@ pub enum Axis {
 }
 
 #[derive(Clone)]
-pub struct BoardRow {
+pub struct BoardRow<Texture: Clone> {
     full: bool,
-    row: Box<[Option<color::Rgb<u8>>]>,
+    row: Box<[Option<Texture>]>,
 }
 
-impl BoardRow {
+impl<Texture: Clone> BoardRow<Texture> {
     fn new(width: usize) -> Self {
         Self {
             full: false,
@@ -27,26 +26,36 @@ impl BoardRow {
         self.full
     }
 
-    pub fn get_row(&self) -> &Box<[Option<color::Rgb<u8>>]> {
+    pub fn get_row(&self) -> &Box<[Option<Texture>]> {
         &self.row
     }
 }
 
-pub struct GameState {
+pub struct Textures<T: Clone> {
+    pub blue: T,
+    pub green: T,
+    pub light_blue: T,
+    pub orange: T,
+    pub purple: T,
+    pub red: T,
+    pub yellow: T,
+}
+
+pub struct GameState<Texture: Clone> {
     width: u32,
     height: u32,
     time: u64,
     game_speed: u64,
-    pieces: Vec<Piece>,
-    current_piece: Piece,
-    board: Board,
+    pieces: Vec<Piece<Texture>>,
+    current_piece: Piece<Texture>,
+    board: Board<Texture>,
     break_frame: Option<u32>,
 }
 
-impl GameState {
-    pub fn new(width: u32, height: u32) -> Self {
+impl<Texture: Clone> GameState<Texture> {
+    pub fn new(width: u32, height: u32, textures: Textures<Texture>) -> Self {
         let board = vec![BoardRow::new(width as usize); height as usize].into_boxed_slice();
-        let pieces = Piece::get_standard_pieces();
+        let pieces = Piece::get_standard_pieces(textures);
         let current_piece = Self::get_random_piece(&pieces);
         GameState {
             width,
@@ -60,7 +69,7 @@ impl GameState {
         }
     }
 
-    pub fn get_random_piece(pieces: &Vec<Piece>) -> Piece {
+    pub fn get_random_piece(pieces: &Vec<Piece<Texture>>) -> Piece<Texture> {
         pieces.choose(&mut rand::thread_rng()).unwrap().clone()
     }
 
@@ -68,11 +77,11 @@ impl GameState {
         self.time += 1
     }
 
-    pub fn get_current_piece(&self) -> &Piece {
+    pub fn get_current_piece(&self) -> &Piece<Texture> {
         &self.current_piece
     }
 
-    pub fn get_board(&self) -> &Board {
+    pub fn get_board(&self) -> &Board<Texture> {
         &self.board
     }
 
@@ -81,7 +90,7 @@ impl GameState {
     }
 
     // Checks if passed in piece is outised the bounds of the board and if intersecting a block on the grid.
-    fn does_intersect(&self, piece: &Piece) -> bool {
+    fn does_intersect(&self, piece: &Piece<Texture>) -> bool {
         let block_positions = piece.get_block_positions();
         block_positions
             .iter()
@@ -130,7 +139,7 @@ impl GameState {
     //Removes full rows after break animation is finished.
     fn break_rows(&mut self) {
         //Keeps a queue of empty rows for next rows to go into.
-        let mut free_rows: VecDeque<&mut BoardRow> = VecDeque::new();
+        let mut free_rows: VecDeque<&mut BoardRow<Texture>> = VecDeque::new();
 
         //Steps through each row and s
         for row in &mut self.board.iter_mut() {
@@ -163,7 +172,8 @@ impl GameState {
             let did_intersect = !self.move_current_piece(Axis::Y, -1.0);
             if did_intersect {
                 for Point { x, y } in self.current_piece.get_block_positions().iter() {
-                    self.board[*y as usize].row[*x as usize] = Some(self.current_piece.color);
+                    self.board[*y as usize].row[*x as usize] =
+                        Some(self.current_piece.texture.clone());
                 }
                 self.current_piece = Self::get_random_piece(&self.pieces);
             }
