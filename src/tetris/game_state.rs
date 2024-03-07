@@ -77,11 +77,11 @@ impl<'a, Texture> GameState<&'a Texture> {
         self.time += 1
     }
 
-    pub fn get_current_piece(&self) -> &Piece<&'a Texture> {
+    pub fn get_current_piece(&self) -> &Piece<&Texture> {
         &self.current_piece
     }
 
-    pub fn get_board(&self) -> &Board<&'a Texture> {
+    pub fn get_board(&self) -> &Board<&Texture> {
         &self.board
     }
 
@@ -90,7 +90,7 @@ impl<'a, Texture> GameState<&'a Texture> {
     }
 
     // Checks if passed in piece is outised the bounds of the board and if intersecting a block on the grid.
-    fn does_intersect(&self, piece: &Piece<&'a Texture>) -> bool {
+    fn does_intersect(&self, piece: &Piece<&Texture>) -> bool {
         let block_positions = piece.get_block_positions();
         block_positions
             .iter()
@@ -139,7 +139,7 @@ impl<'a, Texture> GameState<&'a Texture> {
     //Removes full rows after break animation is finished.
     fn break_rows(&mut self) {
         //Keeps a queue of empty rows for next rows to go into.
-        let mut free_rows: VecDeque<&mut BoardRow<&'a Texture>> = VecDeque::new();
+        let mut free_rows: VecDeque<&mut BoardRow<&Texture>> = VecDeque::new();
 
         //Steps through each row and s
         for row in &mut self.board.iter_mut() {
